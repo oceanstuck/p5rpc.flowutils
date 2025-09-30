@@ -1,7 +1,9 @@
-﻿using p5rpc.flowscriptframework.interfaces;
+﻿using p5rpc.CustomSaveDataFramework.Interfaces;
+using p5rpc.flowscriptframework.interfaces;
 using p5rpc.flowutils.Configuration;
-using p5rpc.flowutils.Template;
 using p5rpc.flowutils.logging;
+using p5rpc.flowutils.Template;
+using p5rpc.lib.interfaces;
 using Reloaded.Hooks.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces;
 
@@ -66,8 +68,32 @@ namespace p5rpc.flowutils
                 throw new Exception("Failed to get IFlowFramework Controller");
             }
 
-            var functions = new FlowFunctions(flowFramework, _modLoader, ref logger);
+            var p5rLibController = _modLoader.GetController<IP5RLib>();
+            if (p5rLibController == null || !p5rLibController.TryGetTarget(out var p5rLib))
+            {
+                throw new Exception("Failed to get IP5RLib Controller");
+            }
+
+            // flowscript framework doesnt seem to like conditionally registering functions but i dont have a better fallback for if csdf isnt loaded so this shit doesnt work
+            // may have to just make csdf stuff a separate mod if anyone ends up actually needing it
+            /*
+            ICustomSaveDataFramework? customSaveDataFramework = null;
+            if (_modLoader.GetAppConfig().EnabledMods.Contains("p5rpc.CustomSaveDataFramework"))
+            {
+                _modLoader.LoadMod("p5rpc.CustomSaveDataFramework");
+
+                var customSaveDataController = _modLoader.GetController<ICustomSaveDataFramework>();
+                if (customSaveDataController == null || !customSaveDataController.TryGetTarget(out customSaveDataFramework))
+                {
+                    throw new Exception("Failed to get ICustomSaveDataFramework Controller");
+                }
+            }
+            */
+
+            var functions = new FlowFunctions(flowFramework, _modLoader, ref logger, p5rLib.FlowCaller/*, ref customSaveDataFramework*/);
             functions.RegisterConfigReaders();
+            functions.RegisterMiscFunctions();
+            // functions.RegisterCustomSaveDataHandlers();
         }
 
         #region Standard Overrides

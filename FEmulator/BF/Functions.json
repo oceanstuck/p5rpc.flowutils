@@ -1,6 +1,6 @@
 [
   {
-    "Index": "",
+    "Index": "0x4364",
     "ReturnType": "int",
     "Name": "IS_MOD_ENABLED",
     "Description": "Returns 1 if a mod is enabled, 0 otherwise.",
@@ -13,7 +13,7 @@
     ]
   },
   {
-    "Index": "",
+    "Index": "0xD842",
     "ReturnType": "int",
     "Name": "GET_CONFIG_INT_VALUE",
     "Description": "Returns the value of a config option as an int. For enums, returns the underlying int value.",
@@ -31,7 +31,7 @@
     ]
   },
   {
-    "Index": "",
+    "Index": "0x9FE2",
     "ReturnType": "float",
     "Name": "GET_CONFIG_FLOAT_VALUE",
     "Description": "Returns the value of a config option as a float.",
@@ -49,15 +49,120 @@
     ]
   },
   {
-    "Index": "0xE2E7",
+    "Index": "0x27CD",
     "ReturnType": "int",
     "Name": "CMM_GET_IN_USE_ID",
-    "Description": "Returns the id currently in use for a Confidant. For use with female Confidants. Returns -1 if Confidant has not been started. (WARNING: Currently only works for Confidants affected by this mod. Ask or make a pr if you want to generalize to all ids.)",
+    "Description": "Returns the id currently in use for a Confidant. For use with female Confidants. Returns -1 if Confidant has not been started.",
     "Parameters": [
       {
         "Type": "int",
         "Name": "commuId",
         "Description": "Confidant's id as seen in CMM.BIN."
+      }
+    ]
+  },
+  {
+    "Index": "",
+    "ReturnType": "int",
+    "Name": "GET_CUSTOM_SAVE_DATA_INT",
+    "Description": "Returns the value of a saved byte, short, or int made by Custom Save Data Framework.",
+    "Parameters": [
+      {
+        "Type": "string",
+        "Name": "modId",
+        "Description": "ID of a mod as seen in its ModConfig.json."
+      },
+      {
+        "Type": "string",
+        "Name": "key",
+        "Description": "Key of a saved value as defined by the mod passed to modId."
+      }
+    ]
+  },
+  {
+    "Index": "",
+    "ReturnType": "float",
+    "Name": "GET_CUSTOM_SAVE_DATA_FLOAT",
+    "Description": "Returns the value of a saved byte, short, or int made by Custom Save Data Framework.",
+    "Parameters": [
+      {
+        "Type": "string",
+        "Name": "modId",
+        "Description": "ID of a mod as seen in its ModConfig.json."
+      },
+      {
+        "Type": "string",
+        "Name": "key",
+        "Description": "Key of a saved value as defined by the mod passed to modId."
+      }
+    ]
+  },
+  {
+    "Index": "",
+    "ReturnType": "int",
+    "Name": "SET_CUSTOM_SAVE_DATA_INT",
+    "Description": "Modifies a value of integral type made by Custom Save Data Framework. Returns 1 if the operation succeeded.",
+    "Parameters": [
+      {
+        "Type": "string",
+        "Name": "modId",
+        "Description": "ID of a mod as seen in its ModConfig.json."
+      },
+      {
+        "Type": "string",
+        "Name": "key",
+        "Description": "Key of a saved value as defined by the mod passed to modId."
+      },
+      {
+        "Type": "int",
+        "Name": "value",
+        "Description": "The new value of the field being written to."
+      }
+    ]
+  },
+  {
+    "Index": "",
+    "ReturnType": "int",
+    "Name": "SET_CUSTOM_SAVE_DATA_FLOAT",
+    "Description": "Modifies a value of floating-point type made by Custom Save Data Framework. Returns 1 if the operation succeeded.",
+    "Parameters": [
+      {
+        "Type": "string",
+        "Name": "modId",
+        "Description": "ID of a mod as seen in its ModConfig.json."
+      },
+      {
+        "Type": "string",
+        "Name": "key",
+        "Description": "Key of a saved value as defined by the mod passed to modId."
+      },
+      {
+        "Type": "float",
+        "Name": "value",
+        "Description": "The new value of the field being written to."
+      }
+    ]
+  },
+  {
+    "Index": "",
+    "ReturnType": "int",
+    "Name": "SET_CUSTOM_SAVE_DATA_STRING",
+    "Description": "Modifies a value of string type made by Custom Save Data Framework. Returns 1 if the operation succeeded.",
+    "Parameters": [
+      {
+        "Type": "string",
+        "Name": "modId",
+        "Description": "ID of a mod as seen in its ModConfig.json."
+      },
+      {
+        "Type": "string",
+        "Name": "key",
+        "Description": "Key of a saved value as defined by the mod passed to modId."
+      },
+      {
+        "Type": "string",
+        "Name": "value",
+        "Description": "The new value of the field being written to."
       }
     ]
   }
