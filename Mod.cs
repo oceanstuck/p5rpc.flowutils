@@ -1,5 +1,4 @@
-﻿using p5rpc.CustomSaveDataFramework.Interfaces;
-using p5rpc.flowscriptframework.interfaces;
+﻿using p5rpc.flowscriptframework.interfaces;
 using p5rpc.flowutils.Configuration;
 using p5rpc.flowutils.logging;
 using p5rpc.flowutils.Template;
@@ -74,26 +73,9 @@ namespace p5rpc.flowutils
                 throw new Exception("Failed to get IP5RLib Controller");
             }
 
-            // flowscript framework doesnt seem to like conditionally registering functions but i dont have a better fallback for if csdf isnt loaded so this shit doesnt work
-            // may have to just make csdf stuff a separate mod if anyone ends up actually needing it
-            /*
-            ICustomSaveDataFramework? customSaveDataFramework = null;
-            if (_modLoader.GetAppConfig().EnabledMods.Contains("p5rpc.CustomSaveDataFramework"))
-            {
-                _modLoader.LoadMod("p5rpc.CustomSaveDataFramework");
-
-                var customSaveDataController = _modLoader.GetController<ICustomSaveDataFramework>();
-                if (customSaveDataController == null || !customSaveDataController.TryGetTarget(out customSaveDataFramework))
-                {
-                    throw new Exception("Failed to get ICustomSaveDataFramework Controller");
-                }
-            }
-            */
-
-            var functions = new FlowFunctions(flowFramework, _modLoader, ref logger, p5rLib.FlowCaller/*, ref customSaveDataFramework*/);
+            var functions = new FlowFunctions(flowFramework, _modLoader, ref logger, p5rLib.FlowCaller);
             functions.RegisterConfigReaders();
             functions.RegisterMiscFunctions();
-            // functions.RegisterCustomSaveDataHandlers();
         }
 
         #region Standard Overrides
