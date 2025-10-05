@@ -32,6 +32,22 @@ internal class FlowFunctions
         _logger = logger;
         _modLoader = modLoader;
         _flowCaller = flowCaller;
+
+        confidantIds = new List<(int, int)>()
+        {
+            (3, 23),
+            (4, 24),
+            (7, 25),
+            (10, 26),
+            (11, 27),
+            (14, 28),
+            (15, 29),
+            (16, 30),
+            (18, 31),
+            // (21, 32), sae altid is never used
+            (33, 34),
+            (36, 37)
+        };
     }
 
     public void RegisterConfigReaders()
@@ -52,13 +68,16 @@ internal class FlowFunctions
             var modId = flowApi.GetStringArg(0);
             var configId = flowApi.GetStringArg(1);
 
-            object? value = null;
-            if (!TryGetR2ConfigValue(modId, configId, out value) && TryGetRemixConfigValue(modId, configId, out value))
+            if (!_modLoader.GetAppConfig().EnabledMods.Contains(modId)) { flowApi.SetReturnValue(0); }
+            else
             {
-                _logger.WriteLog(LogLevel.ERROR, $"Failed to read config file for {modId}.");
-                throw new Exception($"Failed to read config file for {modId}.");
+                object? value = null;
+                if (!TryGetR2ConfigValue(modId, configId, out value) && !TryGetRemixConfigValue(modId, configId, out value))
+                {
+                    _logger.WriteLog(LogLevel.ERROR, $"Failed to read config file for {modId}.");
+                }
+                flowApi.SetReturnValue((int)value!);
             }
-            flowApi.SetReturnValue((int)value);
 
             return FlowStatus.SUCCESS;
         });
@@ -69,13 +88,16 @@ internal class FlowFunctions
             var modId = flowApi.GetStringArg(0);
             var configId = flowApi.GetStringArg(1);
 
-            object? value = null;
-            if (!TryGetR2ConfigValue(modId, configId, out value, true) && TryGetRemixConfigValue(modId, configId, out value, true))
+            if (!_modLoader.GetAppConfig().EnabledMods.Contains(modId)) { flowApi.SetReturnValue(0); }
+            else
             {
-                _logger.WriteLog(LogLevel.ERROR, $"Failed to read config file for {modId}.");
-                throw new Exception($"Failed to read config file for {modId}.");
+                object? value = null;
+                if (!TryGetR2ConfigValue(modId, configId, out value, true) && !TryGetRemixConfigValue(modId, configId, out value, true))
+                {
+                    _logger.WriteLog(LogLevel.ERROR, $"Failed to read config file for {modId}.");
+                }
+                flowApi.SetReturnValue((float)value!);
             }
-            flowApi.SetReturnValue((float)value);
 
             return FlowStatus.SUCCESS;
 
@@ -84,22 +106,6 @@ internal class FlowFunctions
 
     public void RegisterMiscFunctions()
     {
-        confidantIds = new List<(int, int)>()
-        {
-            (3, 23),
-            (4, 24),
-            (7, 25),
-            (10, 26),
-            (11, 27),
-            (14, 28),
-            (15, 29),
-            (16, 30),
-            (18, 31),
-            // (21, 32), sae altid is never used
-            (33, 34),
-            (36, 37)
-        };
-
         _flowFramework.Register("CMM_GET_IN_USE_ID", 1, () =>
         {
             var flowApi = _flowFramework.GetFlowApi();
@@ -107,11 +113,11 @@ internal class FlowFunctions
 
             var idPair = confidantIds.Exists(x => x.Item1 == inputId || x.Item2 == inputId) ? confidantIds.Find(x => x.Item1 == inputId || x.Item2 == inputId) : (inputId, inputId);
 
-            if (idPair.Item1 == 33 || idPair.Item1 == 36) // hardcoded sumire check bc both halves are 2 ids each (34 should never be used though...)
+            if (idPair.Item1 == 33 || idPair.Item1 == 36) // hardcoded sumire check bc both halves are 2 ids each
             {
                 for (int i = 37; i > 32; i--)
                 {
-                    if (i == 35 || i == 34) { i = 33; } // bypass maruki id and unused "kasumi" altid
+                    if (i == 35) { continue; } // bypass maruki id
                     if (_flowCaller.CMM_EXIST(i) == 1)
                     {
                         flowApi.SetReturnValue(i);
@@ -154,12 +160,12 @@ internal class FlowFunctions
                     else
                     {
                         _logger.WriteLog(LogLevel.ERROR, $"Failed to parse config value {configId} in {modId}.");
-                        throw new ArgumentException($"Failed to parse config value {configId} in {modId}.");
+                        return false;
                     }
                     break;
                 default:
                     _logger.WriteLog(LogLevel.ERROR, $"Config value {configId} in {modId} is unsupported type: {configItem.ValueKind.ToString()}.");
-                    throw new ArgumentException($"Config value {configId} in {modId} is unsupported type: {configItem.ValueKind.ToString()}.");
+                    return false;
             }
         }
         return true;
@@ -173,7 +179,8 @@ internal class FlowFunctions
         string schemaPath = Path.Combine(_modLoader.GetDirectoryForModId(modId), "ReMIX", "Config", "config.yaml");
         if (!File.Exists(schemaPath))
         {
-            _logger.WriteLog(LogLevel.ERROR, $"Couldn't find ReMIX schema file for {modId}.");
+            _logger.WriteLog(LogLevel.INFO, $"Couldn't find ReMIX schema file for {modId}.");
+            configValue = 0;
             return false;
         }
         if (!File.Exists(configPath))
@@ -188,7 +195,7 @@ internal class FlowFunctions
         if (remixConfig == null)
         {
             _logger.WriteLog(LogLevel.ERROR, $"Failed to deserialize ReMIX config for {modId}.");
-            throw new Exception($"Failed to deserialize ReMIX config for {modId}.");
+            return false;
         }
 
         var schemaParser = new Parser(new StringReader(schemaPath));
@@ -210,7 +217,7 @@ internal class FlowFunctions
         if (configSchema == null)
         {
             _logger.WriteLog(LogLevel.ERROR, $"Failed to deserialize ReMIX schema for {modId}.");
-            throw new Exception($"Failed to deserialize ReMIX schema for {modId}.");
+            return false;
         }
 
         if (remixConfig.TryGetValue(configSchema.Id, out configValue))
@@ -221,7 +228,7 @@ internal class FlowFunctions
             if (configType == typeof(string))
             {
                 _logger.WriteLog(LogLevel.ERROR, $"Config value {configId} in {modId} is unsupported type: {configType.ToString()}.");
-                throw new ArgumentException($"Config value {configId} in {modId} is unsupported type: {configType.ToString()}.");
+                return false;
             }
             else if (isFloat)
             {
@@ -231,7 +238,7 @@ internal class FlowFunctions
             else
             {
                 configValue = configType.IsEnum ? Convert.ToInt32(configValue) : Convert.ChangeType(configValue, configType);
-                if (configType == typeof(bool)) { configValue = (bool)configValue ? 1 : 0; }
+                if (configType == typeof(bool)) { configValue = (bool)configValue! ? 1 : 0; }
             }
         }
         return true;

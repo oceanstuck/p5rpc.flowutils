@@ -39,9 +39,8 @@ internal class FlowFunctions
             if (!TryGetCustomSaveDataValue(modId, key, out var value))
             {
                 _logger.WriteLog(LogLevel.ERROR, $"Failed to get custom save item {key} from {modId}.");
-                throw new Exception($"Failed to read custom save item {key} from {modId}.");
             }
-            flowApi.SetReturnValue((int)value);
+            flowApi.SetReturnValue((int)value!);
 
             return FlowStatus.SUCCESS;
         });
@@ -70,9 +69,8 @@ internal class FlowFunctions
             if (!TryGetCustomSaveDataValue(modId, key, out var value, true))
             {
                 _logger.WriteLog(LogLevel.ERROR, $"Failed to get custom save item {key} from {modId}.");
-                throw new Exception($"Failed to read custom save item {key} from {modId}.");
             }
-            flowApi.SetReturnValue((float)value);
+            flowApi.SetReturnValue((float)value!);
 
             return FlowStatus.SUCCESS;
         });
@@ -123,7 +121,7 @@ internal class FlowFunctions
             if (!isFloat && (entry is SavedFloat || entry is SavedDouble)) { _logger.WriteLog(LogLevel.WARNING, "Attempted to read custom save float/double value as int."); }
             if (entry is SavedLong) { _logger.WriteLog(LogLevel.WARNING, "Attempted to read custom save long value."); }
 
-            value = isFloat ? ((SavedFloat)entry).value : ((SavedInt)entry).value;
+            value = isFloat ? ((SavedFloat)entry!).value : ((SavedInt)entry!).value;
             return true;
         }
         else { return false; }
@@ -139,7 +137,7 @@ internal class FlowFunctions
 
         if (_customSaveDataFramework.TryGetEntry(modId, key, out var entry))
         {
-            switch (entry.GetType().ToString())
+            switch (entry!.GetType().ToString())
             {
                 case nameof(SavedString):
                     ((SavedString)entry).value = (string)value;

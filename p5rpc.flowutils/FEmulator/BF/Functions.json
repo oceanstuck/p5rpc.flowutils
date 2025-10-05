@@ -16,7 +16,7 @@
     "Index": "0xD842",
     "ReturnType": "int",
     "Name": "GET_CONFIG_INT_VALUE",
-    "Description": "Returns the value of a config option as an int. For enums, returns the underlying int value.",
+    "Description": "Returns the value of a config option as an int, or 0 if the mod is not enabled. For enums, returns the underlying int value.",
     "Parameters": [
       {
         "Type": "string",
@@ -34,7 +34,7 @@
     "Index": "0x9FE2",
     "ReturnType": "float",
     "Name": "GET_CONFIG_FLOAT_VALUE",
-    "Description": "Returns the value of a config option as a float.",
+    "Description": "Returns the value of a config option as a float, or 0 if the mod is not enabled.",
     "Parameters": [
       {
         "Type": "string",
