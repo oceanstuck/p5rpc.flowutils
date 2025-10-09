@@ -11,9 +11,9 @@
   "ModNativeDll32": "",
   "ModNativeDll64": "",
   "Tags": [],
-  "CanUnload": null,
-  "HasExports": null,
-  "IsLibrary": false,
+  "CanUnload": false,
+  "HasExports": false,
+  "IsLibrary": true,
   "ReleaseMetadataFileName": "p5rpc.flowutils.ReleaseMetadata.json",
   "PluginData": {
     "GitHubDependencies": {

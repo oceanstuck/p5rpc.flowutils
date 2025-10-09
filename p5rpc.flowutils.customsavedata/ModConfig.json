@@ -13,7 +13,7 @@
   "Tags": [],
   "CanUnload": null,
   "HasExports": null,
-  "IsLibrary": false,
+  "IsLibrary": true,
   "ReleaseMetadataFileName": "p5rpc.flowutils.customsavedata.ReleaseMetadata.json",
   "PluginData": {
     "GitHubDependencies": {
