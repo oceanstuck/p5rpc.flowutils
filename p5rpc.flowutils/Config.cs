@@ -103,11 +103,31 @@ namespace p5rpc.flowutils.Configuration
             forceFileSystem: true)]
         public string Folder { get; set; } = "";
         */
-
+#if DEBUG
         [DisplayName("Log Level")]
         [DefaultValue(LogLevel.WARNING)]
         [Display(Order = 0)]
+        [Category("Logging")]
         public LogLevel loglevel { get; set; } = LogLevel.WARNING;
+
+        [DisplayName("Test Bool")]
+        [DefaultValue(true)]
+        [Display(Order = 1)]
+        [Category("Testing")]
+        public bool testBool { get; set; } = true;
+
+        [DisplayName("Test Int")]
+        [DefaultValue(69)]
+        [Display(Order = 2)]
+        [Category("Testing")]
+        public int testInt { get; set; } = 69;
+
+        [DisplayName("Test Float")]
+        [DefaultValue(4.20)]
+        [Display(Order = 3)]
+        [Category("Testing")]
+        public float testFloat { get; set; } = 4.20f;
+#endif
     }
 
     /// <summary>

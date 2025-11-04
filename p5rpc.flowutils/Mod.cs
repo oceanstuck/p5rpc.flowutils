@@ -60,7 +60,7 @@ namespace p5rpc.flowutils
             // If you want to implement e.g. unload support in your mod,
             // and some other neat features, override the methods in ModBase.
 
-            var logger = new Logger(_logger);
+            var logger = new Logger(_logger, _configuration.loglevel);
             var flowFrameworkController = _modLoader.GetController<IFlowFramework>();
             if (flowFrameworkController == null || !flowFrameworkController.TryGetTarget(out var flowFramework))
             {
@@ -74,8 +74,6 @@ namespace p5rpc.flowutils
             }
 
             var functions = new FlowFunctions(flowFramework, _modLoader, ref logger, p5rLib.FlowCaller);
-            functions.RegisterConfigReaders();
-            functions.RegisterMiscFunctions();
         }
 
         #region Standard Overrides

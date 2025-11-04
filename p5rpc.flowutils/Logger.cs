@@ -11,7 +11,13 @@ internal class Logger
 {
     private ILogger _logger;
 
-    public Logger(ILogger logger) => _logger = logger;
+    public Logger(ILogger logger, LogLevel level)
+    {
+        _logger = logger;
+        _level = level;
+    }
+
+    private LogLevel _level;
 
     public void WriteLog(LogLevel lvl, string msg)
     {
@@ -36,7 +42,7 @@ internal class Logger
                 break;
         }
 
-        _logger.WriteLine($"[Flow Utils][{lvl.ToString()}] {msg}", color);
+        if (_level <= lvl) { _logger.WriteLine($"[Flow Utils][{lvl.ToString()}] {msg}", color); }
     }
 }
 
