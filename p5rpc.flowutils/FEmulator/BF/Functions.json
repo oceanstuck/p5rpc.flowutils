@@ -16,7 +16,7 @@
     "Index": "0xD842",
     "ReturnType": "int",
     "Name": "GET_CONFIG_INT_VALUE",
-    "Description": "Returns the value of a config option as an int, or 0 if the mod is not enabled. For enums, returns the underlying int value.",
+    "Description": "Returns the value of a config option as an int. If config file or schema cannot be found, returns 0.",
     "Parameters": [
       {
         "Type": "string",
@@ -34,7 +34,7 @@
     "Index": "0x9FE2",
     "ReturnType": "float",
     "Name": "GET_CONFIG_FLOAT_VALUE",
-    "Description": "Returns the value of a config option as a float, or 0 if the mod is not enabled.",
+    "Description": "Returns the value of a config option as a float. If config file or schema cannot be found, returns 0.",
     "Parameters": [
       {
         "Type": "string",
@@ -60,5 +60,23 @@
         "Description": "Confidant's id as seen in CMM.BIN."
       }
     ]
-  }  
+  },
+  {
+    "Index": "0x2688",
+    "ReturnType": "int",
+    "Name": "SUM_ITEM_ID",
+    "Description": "Returns an item's true id, given its section and relative id within that section.",
+    "Parameters": [
+      {
+        "Type": "int",
+        "Name": "section",
+        "Description": "A number representing the item's section. (0 = melee weapons, 1 = armor, 2 = accessories, 3 = consumables, 4 = key items, 5 = sellable loot, 6 = skill cards, 7 = outfits, 8 = guns)"
+      },
+      {
+        "Type": "int",
+        "Name": "idInSection",
+        "Description": "Item's relative id within a section (eg. 5 for section and 105 for idInSection will give marble chessboard id)."
+      }
+    ]
+  }
 ]
