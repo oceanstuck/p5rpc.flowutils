@@ -208,42 +208,34 @@ internal class FlowFunctions
         configValue = null;
         _logger.WriteLog(LogLevel.INFO, $"Attempting to read {(isFloat ? "float" : "int")} value from R2 config");
 
-        try
+        using (JsonDocument r2Config = JsonDocument.Parse(File.ReadAllText(configPath)))
         {
-            using (JsonDocument r2Config = JsonDocument.Parse(File.ReadAllText(configPath)))
-            {
-                var configItem = r2Config.RootElement.GetProperty(configId);
-                _logger.WriteLog(LogLevel.DEBUG, $"{configId} in {modId} is of type {configItem.ValueKind}");
+            var configItem = r2Config.RootElement.GetProperty(configId);
+            _logger.WriteLog(LogLevel.DEBUG, $"{configId} in {modId} is of type {configItem.ValueKind}");
 
-                switch (configItem.ValueKind)
-                {
-                    case JsonValueKind.True:
-                        configValue = 1;
-                        break;
-                    case JsonValueKind.False:
-                        configValue = 0;
-                        break;
-                    case JsonValueKind.Number:
-                        if (isFloat && configItem.TryGetDouble(out var floatVal)) { configValue = floatVal; }
-                        else if (configItem.TryGetInt32(out var intVal)) { configValue = intVal; }
-                        else
-                        {
-                            _logger.WriteLog(LogLevel.ERROR, $"Failed to parse config value {configId} in {modId}.");
-                            return false;
-                        }
-                        break;
-                    default:
-                        _logger.WriteLog(LogLevel.ERROR, $"Config value {configId} in {modId} is unsupported type: {configItem.ValueKind.ToString()}.");
+            switch (configItem.ValueKind)
+            {
+                case JsonValueKind.True:
+                    configValue = 1;
+                    break;
+                case JsonValueKind.False:
+                    configValue = 0;
+                    break;
+                case JsonValueKind.Number:
+                    if (isFloat && configItem.TryGetDouble(out var floatVal)) { configValue = (float)floatVal; }
+                    else if (configItem.TryGetInt32(out var intVal)) { configValue = intVal; }
+                    else
+                    {
+                        _logger.WriteLog(LogLevel.ERROR, $"Failed to parse config value {configId} in {modId}.");
                         return false;
-                }
+                    }
+                    break;
+                default:
+                    _logger.WriteLog(LogLevel.ERROR, $"Config value {configId} in {modId} is unsupported type: {configItem.ValueKind.ToString()}.");
+                    return false;
             }
-            return true;
         }
-        catch (Exception ex)
-        {
-            _logger.WriteLog(LogLevel.ERROR, ex.ToString());
-            return false;
-        }
+        return true;
     }
 
     private bool TryGetRemixConfigValue(string modId, string configId, string configPath, string schemaPath, out object? configValue, bool isFloat = false)
@@ -251,84 +243,76 @@ internal class FlowFunctions
         configValue = null;
         _logger.WriteLog(LogLevel.INFO, $"Attempting to read {(isFloat ? "float" : "int")} value from ReMIX config");
 
-        try
+        var yamlDeserializer = new DeserializerBuilder().IgnoreUnmatchedProperties().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
+
+        _logger.WriteLog(LogLevel.DEBUG, $"Deserializing config file for {modId}");
+        var remixConfig = yamlDeserializer.Deserialize<Dictionary<string, object>>(File.ReadAllText(configPath));
+        if (remixConfig == null)
         {
-            var yamlDeserializer = new DeserializerBuilder().IgnoreUnmatchedProperties().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
+            _logger.WriteLog(LogLevel.ERROR, $"Failed to deserialize ReMIX config for {modId}.");
+            return false;
+        }
 
-            _logger.WriteLog(LogLevel.DEBUG, $"Deserializing config file for {modId}");
-            var remixConfig = yamlDeserializer.Deserialize<Dictionary<string, object>>(File.ReadAllText(configPath));
-            if (remixConfig == null)
+        var schemaParser = new Parser(new StringReader(File.ReadAllText(schemaPath)));
+        schemaParser.Consume<StreamStart>();
+        schemaParser.Consume<DocumentStart>();
+        schemaParser.Consume<MappingStart>();
+
+        ConfigSetting? configSchema = null;
+        while (schemaParser.TryConsume<Scalar>(out var section))
+        {
+            if (section.Value == "settings")
             {
-                _logger.WriteLog(LogLevel.ERROR, $"Failed to deserialize ReMIX config for {modId}.");
-                return false;
-            }
-
-            var schemaParser = new Parser(new StringReader(schemaPath));
-            schemaParser.Consume<StreamStart>();
-            schemaParser.Consume<DocumentStart>();
-            schemaParser.Consume<MappingStart>();
-
-            ConfigSetting? configSchema = null;
-            while (schemaParser.TryConsume<Scalar>(out var section))
-            {
-                if (section.Value == "settings")
-                {
-                    _logger.WriteLog(LogLevel.DEBUG, $"Deserializing schema settings for {modId}");
-                    configSchema = yamlDeserializer.Deserialize<ConfigSetting[]>(schemaParser).Where(x => x.Id == configId).First();
-                    break;
-                }
-                else
-                {
-                    _logger.WriteLog(LogLevel.DEBUG, $"Skipping schema {section.Value} section...");
-                    schemaParser.SkipThisAndNestedEvents();
-                }
-            }
-
-            if (configSchema == null)
-            {
-                _logger.WriteLog(LogLevel.ERROR, $"Failed to deserialize ReMIX schema for {modId}.");
-                return false;
-            }
-
-            if (remixConfig.TryGetValue(configSchema.Id, out configValue))
-            {
-                if (configValue == null)
-                {
-                    _logger.WriteLog(LogLevel.WARNING, $"Config value {configSchema.Id} for {modId} returned null. Returning default value...");
-                    configValue = configSchema.GetDefaultValue();
-                }
-
-                var configType = configSchema.GetPropertyType();
-                _logger.WriteLog(LogLevel.DEBUG, $"{configId} in {modId} is of type {nameof(configType)}");
-
-                if (configType == typeof(string))
-                {
-                    _logger.WriteLog(LogLevel.ERROR, $"Config value {configId} in {modId} is unsupported type: {configType.ToString()}.");
-                    return false;
-                }
-                else if (isFloat)
-                {
-                    if (configType == typeof(double)) { _logger.WriteLog(LogLevel.WARNING, $"Attempted to read double value {configId} in {modId}."); }
-                    configValue = Convert.ChangeType(configValue, configType);
-                }
-                else
-                {
-                    configValue = configType.IsEnum ? Convert.ToInt32(configValue) : Convert.ChangeType(configValue, configType);
-                    if (configType == typeof(bool)) { configValue = (bool)configValue! ? 1 : 0; }
-                }
-
-                _logger.WriteLog(LogLevel.DEBUG, $"Config value {configId} in {modId} is equal to {configValue!.ToString()}");
-                return true;
+                _logger.WriteLog(LogLevel.DEBUG, $"Deserializing schema settings for {modId}");
+                configSchema = yamlDeserializer.Deserialize<ConfigSetting[]>(schemaParser).Where(x => x.Id == configId).First();
+                break;
             }
             else
             {
-                _logger.WriteLog(LogLevel.ERROR, $"Failed to get config value {configId} in {modId}");
-                return false;
+                _logger.WriteLog(LogLevel.DEBUG, $"Skipping schema {section.Value} section...");
+                schemaParser.SkipThisAndNestedEvents();
             }
         }
-        catch (Exception ex)
+
+        if (configSchema == null)
         {
-            _logger.WriteLog(LogLevel.ERROR, ex.ToString());
+            _logger.WriteLog(LogLevel.ERROR, $"Failed to deserialize ReMIX schema for {modId}.");
+            return false;
+        }
+
+        if (remixConfig.TryGetValue(configSchema.Id, out configValue))
+        {
+            if (configValue == null)
+            {
+                _logger.WriteLog(LogLevel.WARNING, $"Config value {configSchema.Id} for {modId} returned null. Returning default value...");
+                configValue = configSchema.GetDefaultValue();
+            }
+
+            var configType = configSchema.GetPropertyType();
+            _logger.WriteLog(LogLevel.DEBUG, $"{configId} in {modId} is of type {configType.ToString()}");
+
+            if (configType == typeof(string))
+            {
+                _logger.WriteLog(LogLevel.ERROR, $"Config value {configId} in {modId} is unsupported type: {configType.ToString()}.");
+                return false;
+            }
+            else if (isFloat)
+            {
+                if (configType == typeof(double)) { _logger.WriteLog(LogLevel.WARNING, $"Attempted to read double value {configId} in {modId}."); }
+                configValue = Convert.ChangeType(configValue, configType);
+            }
+            else
+            {
+                configValue = configType.IsEnum ? Convert.ToInt32(configValue) : Convert.ChangeType(configValue, configType);
+                if (configType == typeof(bool)) { configValue = (bool)configValue! ? 1 : 0; }
+            }
+
+            _logger.WriteLog(LogLevel.DEBUG, $"Config value {configId} in {modId} is equal to {configValue!.ToString()}");
+            return true;
+        }
+        else
+        {
+            _logger.WriteLog(LogLevel.ERROR, $"Failed to get config value {configId} in {modId}");
             return false;
         }
     }
