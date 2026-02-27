@@ -158,7 +158,7 @@
     "GitHubRelease": {
       "UserName": "oceanstuck",
       "RepositoryName": "p5rpc.flowutils",
-      "UseReleaseTag": true,
+      "UseReleaseTag": false,
       "AssetFileName": "Mod.zip"
     },
     "GameBananaDependencies": {
