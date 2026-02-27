@@ -2,7 +2,7 @@
 using p5rpc.flowscriptframework.interfaces;
 using p5rpc.flowutils.customsavedata.Configuration;
 using p5rpc.flowutils.customsavedata.Template;
-using p5rpc.flowutils.logging;
+using p5rpc.flowutils.customsavedata.logging;
 using Reloaded.Hooks.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces;
 
@@ -57,12 +57,7 @@ namespace p5rpc.flowutils.customsavedata
             _configuration = context.Configuration;
             _modConfig = context.ModConfig;
 
-#if DEBUG
-            // Attaches debugger in debug mode; ignored in release.
-            Debugger.Launch();
-#endif
-
-            var logger = new Logger(_logger);
+            var logger = new Logger(_logger, _configuration.loglevel);
             var flowFrameworkController = _modLoader.GetController<IFlowFramework>();
             if (flowFrameworkController == null || !flowFrameworkController.TryGetTarget(out var flowFramework))
             {

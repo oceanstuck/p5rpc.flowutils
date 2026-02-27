@@ -67,12 +67,13 @@ internal class FlowFunctions
     }
 
     private void RegisterConfigReaders()
-    { 
+    {
+        var flowApi = _flowFramework.GetFlowApi();
+
         _flowFramework.Register("IS_MOD_ENABLED", 1, () =>
         {
             _logger.WriteLog(LogLevel.DEBUG, $"Calling IS_MOD_ENABLED...");
 
-            var flowApi = _flowFramework.GetFlowApi();
             var modId = flowApi.GetStringArg(0);
             _logger.WriteLog(LogLevel.DEBUG, $"Mod id passed to IS_MOD_ENABLED: {modId}");
 
@@ -82,11 +83,23 @@ internal class FlowFunctions
             return FlowStatus.SUCCESS;
         });
 
+        _flowFramework.Register("IS_MOD_LOADED", 1, () =>
+        {
+            _logger.WriteLog(LogLevel.DEBUG, $"Calling IS_MOD_LOADED...");
+
+            var modId = flowApi.GetStringArg(0);
+            _logger.WriteLog(LogLevel.DEBUG, $"Mod id passed to IS_MOD_LOADED: {modId}");
+
+            var isLoaded = IsModLoaded(modId) ? 1 : 0;
+            flowApi.SetReturnValue(isLoaded);
+
+            return FlowStatus.SUCCESS;
+        });
+
         _flowFramework.Register("GET_CONFIG_INT_VALUE", 2, () =>
         {
             _logger.WriteLog(LogLevel.DEBUG, $"Calling GET_CONFIG_INT_VALUE...");
 
-            var flowApi = _flowFramework.GetFlowApi();
             var modId = flowApi.GetStringArg(0);
             _logger.WriteLog(LogLevel.DEBUG, $"Mod id passed to GET_CONFIG_INT_VALUE: {modId}");
 
@@ -102,7 +115,6 @@ internal class FlowFunctions
         {
             _logger.WriteLog(LogLevel.DEBUG, $"Calling GET_CONFIG_FLOAT_VALUE...");
 
-            var flowApi = _flowFramework.GetFlowApi();
             var modId = flowApi.GetStringArg(0);
             _logger.WriteLog(LogLevel.DEBUG, $"Mod id passed to GET_CONFIG_FLOAT_VALUE: {modId}");
 
@@ -115,6 +127,8 @@ internal class FlowFunctions
 
         });
     }
+
+    private bool IsModLoaded(string modId) => _modLoader.GetLoadedMods().Where(m => m.ModId == modId).Any();
 
     private object GetConfigValue(string modId, string configId, bool isFloat = false)
     {
@@ -165,11 +179,11 @@ internal class FlowFunctions
 
     private void RegisterMiscFunctions()
     {
+        var flowApi = _flowFramework.GetFlowApi();
+
         _flowFramework.Register("CMM_GET_IN_USE_ID", 1, () =>
         {
-            var flowApi = _flowFramework.GetFlowApi();
             var inputId = flowApi.GetIntArg(0);
-
             var idPair = confidantIds.Exists(x => x.Item1 == inputId || x.Item2 == inputId) ? confidantIds.Find(x => x.Item1 == inputId || x.Item2 == inputId) : (inputId, inputId);
 
             if (idPair.Item1 == 33 || idPair.Item1 == 36) // hardcoded sumire check bc both halves are 2 ids each
@@ -191,16 +205,87 @@ internal class FlowFunctions
             return FlowStatus.SUCCESS;
         });
 
+        _flowFramework.Register("ANY_ROMANCE_ACTIVE", 0, () =>
+        {
+            bool romanceActive = IsDatingWoman() || (IsDatingMan());
+
+            flowApi.SetReturnValue(romanceActive ? 1 : 0);
+            return FlowStatus.SUCCESS;
+        });
+
+        _flowFramework.Register("FEMALE_ROMANCE_ACTIVE", 0, () =>
+        {
+            flowApi.SetReturnValue(IsDatingWoman() ? 1 : 0);
+            return FlowStatus.SUCCESS;
+        });
+
+        _flowFramework.Register("MALE_ROMANCE_ACTIVE", 0, () =>
+        {
+            flowApi.SetReturnValue(IsDatingMan() ? 1 : 0);
+            return FlowStatus.SUCCESS;
+        });
+
+        _flowFramework.Register("GET_MALE_ROMANCE_FLAG", 1, () =>
+        {
+            flowApi.SetReturnValue(GetYaoiFlagId(flowApi.GetIntArg(0)));
+            return FlowStatus.SUCCESS;
+        });
+
         _flowFramework.Register("SUM_ITEM_ID", 2, () =>
         {
-            var flowApi = _flowFramework.GetFlowApi();
-
             var section = flowApi.GetIntArg(0) * 0x1000;
             var idInSection = flowApi.GetIntArg(1);
             flowApi.SetReturnValue(section + idInSection);
 
             return FlowStatus.SUCCESS;
         });
+    }
+
+    private bool IsDatingMan()
+    {
+        return IsModLoaded("p5rpc.misc.maleromanceconftext") &&
+                (_flowCaller.BIT_CHK(GetYaoiFlagId(8)) == 1
+                || _flowCaller.BIT_CHK(GetYaoiFlagId(9)) == 1
+                || _flowCaller.BIT_CHK(GetYaoiFlagId(19)) == 1
+                || _flowCaller.BIT_CHK(GetYaoiFlagId(5)) == 1
+                || _flowCaller.BIT_CHK(3783) == 1
+                || _flowCaller.BIT_CHK(3785) == 1
+                || _flowCaller.BIT_CHK(3786) == 1);
+    }
+
+    private bool IsDatingWoman()
+    {
+        return _flowCaller.BIT_CHK(3792) == 1
+                || _flowCaller.BIT_CHK(3793) == 1
+                || _flowCaller.BIT_CHK(3794) == 1
+                || _flowCaller.BIT_CHK(3795) == 1
+                || _flowCaller.BIT_CHK(3796) == 1
+                || _flowCaller.BIT_CHK(3797) == 1
+                || _flowCaller.BIT_CHK(3798) == 1
+                || _flowCaller.BIT_CHK(3799) == 1
+                || _flowCaller.BIT_CHK(3800) == 1
+                || _flowCaller.BIT_CHK(3784) == 1
+                || _flowCaller.BIT_CHK(3817) == 1;
+    }
+
+    // todo femc behavior
+    private int GetYaoiFlagId(int commuId)
+    {
+        if (!IsModLoaded("p5rpc.misc.maleromanceconftext")) { return -1; }
+        var gayJokerEnabled = _modLoader.GetAppConfig().EnabledMods.Contains("p5rpc.BiJoker.events");
+
+        switch (commuId)
+        {
+            case 5:
+                return gayJokerEnabled ? 3789 : 3790;
+            case 8:
+                return gayJokerEnabled ? 3785 : 3787;
+            case 9:
+                return gayJokerEnabled ? 3786 : 3788;
+            case 19:
+            default:
+                return gayJokerEnabled ? 3791 : 3789;
+        }
     }
 
     private bool TryGetR2ConfigValue(string modId, string configId, string configPath, out object? configValue, bool isFloat = false)
@@ -316,4 +401,9 @@ internal class FlowFunctions
             return false;
         }
     }
+
+    /*private bool TryGetMiraConfigValue(string modId, string configId)
+    {
+
+    }*/
 }

@@ -13,6 +13,19 @@
     ]
   },
   {
+    "Index": "0x5C7D",
+    "ReturnType": "int",
+    "Name": "IS_MOD_LOADED",
+    "Description": "Returns 1 if a mod is loaded, 0 otherwise. Useful for checking for libraries, which aren't detected with IS_MOD_ENABLED.",
+    "Parameters": [
+      {
+        "Type": "string",
+        "Name": "modId",
+        "Description": "ID of a mod as seen in its ModConfig.json."
+      }
+    ]
+  },
+  {
     "Index": "0xD842",
     "ReturnType": "int",
     "Name": "GET_CONFIG_INT_VALUE",
@@ -62,6 +75,40 @@
     ]
   },
   {
+    "Index": "0x0411",
+    "ReturnType": "int",
+    "Name": "ANY_ROMANCE_ACTIVE",
+    "Description": "Returns 1 if romance flag for any Confidant is enabled, 0 otherwise.",
+    "Parameters": []
+  },
+  {
+    "Index": "0x0280",
+    "ReturnType": "int",
+    "Name": "FEMALE_ROMANCE_ACTIVE",
+    "Description": "Returns 1 if romance flag for a female Confidant is enabled, 0 otherwise.",
+    "Parameters": []
+  },
+  {
+    "Index": "0xA77D",
+    "ReturnType": "int",
+    "Name": "MALE_ROMANCE_ACTIVE",
+    "Description": "Returns 1 if romance flag for a male Confidant is enabled, 0 if none active or if Unhardcoded Romance is not loaded.",
+    "Parameters": []
+  },
+  {
+    "Index": "0x2543",
+    "ReturnType": "int",
+    "Name": "GET_MALE_ROMANCE_FLAG",
+    "Description": "Returns the id of the bitflag being used by Unhardcoded Romance for a male Confidant, or -1 if Unhardcoded Romance is not loaded. Useful for ensuring Gay Joker compatibility, as it uses different flags; Female Protagonist compatibility is not yet implemented.",
+    "Parameters": [
+      {
+        "Type": "int",
+        "Name": "commuId",
+        "Description": "Confidant's id as seen in CMM.BIN."
+      }
+    ]
+  },
+  {
     "Index": "0x2688",
     "ReturnType": "int",
     "Name": "SUM_ITEM_ID",
@@ -70,7 +117,7 @@
       {
         "Type": "int",
         "Name": "section",
-        "Description": "A number representing the item's section. (0 = melee weapons, 1 = armor, 2 = accessories, 3 = consumables, 4 = key items, 5 = sellable loot, 6 = skill cards, 7 = outfits, 8 = guns)"
+        "Description": "A number representing the item's section. (0 = melee weapons, 1 = armor, 2 = accessories, 3 = consumables/misc items, 4 = key items, 5 = sellable loot, 6 = skill cards, 7 = outfits, 8 = guns)"
       },
       {
         "Type": "int",
