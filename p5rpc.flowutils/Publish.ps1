@@ -162,8 +162,8 @@ param (
     $UseScriptDirectory=$True,
 
     ## => User Config <= ## 
-    $ProjectPath = "p5rpc.utils.flowconfighandlers.csproj",
-    $PackageName = "p5rpc.utils.flowconfighandlers",
+    $ProjectPath = "p5rpc.flowutils.csproj",
+    $PackageName = "p5rpc.flowutils",
     $PublishOutputDir = "Publish/ToUpload",
 
     ## => User: Delta Config
@@ -180,7 +180,7 @@ param (
 
     $GameBananaItemId = 333681, # From mod page URL.
 
-    $NuGetPackageId = "p5rpc.utils.flowconfighandlers",
+    $NuGetPackageId = "p5rpc.flowutils",
     $NuGetFeedUrl = "http://packages.sewer56.moe:5000/v3/index.json",
     $NuGetAllowUnlisted = $False,
 
