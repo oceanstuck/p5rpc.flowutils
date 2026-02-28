@@ -328,6 +328,8 @@ function Get-Common-Publish-Args {
 	if ($AllowDeltas -and $MakeDelta) {
         $arguments += " --olderversionfolders `"$deltaDirectory`""
 	}
+
+    $arguments += "--includeregexes $IncludeRegexes"
 	
 	return $arguments
 }
