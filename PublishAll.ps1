@@ -11,6 +11,6 @@ Split-Path $MyInvocation.MyCommand.Path | Push-Location
               -PackageName "p5rpc.flowutils.customsavedata" `
               -PublishOutputDir "Publish/ToUpload/CSD" `
 			  -ReadmePath "README.md" `
-			  -ChangelogPath "p5rpc.flowutils/CHANGELOG.MD" `
+			  -ChangelogPath "p5rpc.flowutils.customsavedata/CHANGELOG.MD" `
 
 Pop-Location
