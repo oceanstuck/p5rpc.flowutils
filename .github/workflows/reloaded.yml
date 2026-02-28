@@ -29,7 +29,7 @@ env:
   PUBLISH_GITHUB_PATH: ./Publish/ToUpload/Generic
   PUBLISH_NUGET_PATH: ./Publish/ToUpload/NuGet
   
-  PUBLISH_CHANGELOG_PATH: ./Publish/Changelog.md
+  PUBLISH_CHANGELOG_PATH: ./Changelog.md
   PUBLISH_PATH: ./Publish
   
   RELOADEDIIMODS: .
