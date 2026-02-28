@@ -329,7 +329,7 @@ function Get-Common-Publish-Args {
         $arguments += " --olderversionfolders `"$deltaDirectory`""
 	}
 
-    $arguments += "--includeregexes $IncludeRegexes"
+    $arguments += " --includeregexes $IncludeRegexes"
 	
 	return $arguments
 }
