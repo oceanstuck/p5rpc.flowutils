@@ -11,7 +11,7 @@
 #   - Upload to GitHub Releases
 #   - Upload to Reloaded NuGet Repository (if GitHub Secret RELOADED_NUGET_KEY is specified) 
 
-name: Build and Publish Reloaded Mod
+name: Build and Publish All Mods
 
 on:
   push:
@@ -30,7 +30,7 @@ env:
   PUBLISH_NUGET_PATH: ./Publish/ToUpload/NuGet
   
   PUBLISH_CHANGELOG_PATH: ./Publish/Changelog.md
-  PUBLISH_PATH: ./Publish
+  PUBLISH_PATH: ./PublishAll
   
   RELOADEDIIMODS: .
 
@@ -82,7 +82,7 @@ jobs:
         }
         
     - name: Build
-      run: ./Publish.ps1 -ChangelogPath "$env:PUBLISH_CHANGELOG_PATH"
+      run: ./PublishAll.ps1
       
     - name: Upload GitHub Release Artifact
       uses: actions/upload-artifact@v4
