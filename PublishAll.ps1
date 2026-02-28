@@ -1,12 +1,16 @@
 Split-Path $MyInvocation.MyCommand.Path | Push-Location
 [Environment]::CurrentDirectory = $PWD
 
-$readmePath = ./README.md
-$publishPath = ./Publish/ToUpload
+./Publish.ps1 -ProjectPath "p5rpc.flowutils/p5rpc.flowutils.csproj" `
+              -PackageName "p5rpc.flowutils" `
+              -PublishOutputDir "Publish/ToUpload/Main" `
+			  -ReadmePath "README.md" `
+			  -ChangelogPath "p5rpc.flowutils/CHANGELOG.MD" `
 
-./p5rpc.flowutils/Publish.ps1 -ReadmePath $readmePath -PublishOutputDir $publishPath
+./Publish.ps1 -ProjectPath "p5rpc.flowutils.customsavedata/p5rpc.flowutils.customsavedata.csproj" `
+              -PackageName "p5rpc.flowutils.customsavedata" `
+              -PublishOutputDir "Publish/ToUpload/CSD" `
+			  -ReadmePath "README.md" `
+			  -ChangelogPath "p5rpc.flowutils/CHANGELOG.MD" `
 
-Split-Path $MyInvocation.MyCommand.Path | Push-Location
-[Environment]::CurrentDirectory = $PWD
-
-./p5rpc.flowutils.customsavedata/Publish.ps1 -ReadmePath $readmePath -PublishOutputDir $publishPath
+Pop-Location
