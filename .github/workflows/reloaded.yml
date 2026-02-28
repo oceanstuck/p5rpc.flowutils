@@ -30,7 +30,7 @@ env:
   PUBLISH_NUGET_PATH: ./Publish/ToUpload/NuGet
   
   PUBLISH_CHANGELOG_PATH: ./Publish/Changelog.md
-  PUBLISH_PATH: ./PublishAll
+  PUBLISH_PATH: ./Publish
   
   RELOADEDIIMODS: .
 
