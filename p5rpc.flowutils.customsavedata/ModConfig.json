@@ -2,7 +2,7 @@
   "ModId": "p5rpc.flowutils.customsavedata",
   "ModName": "Flowscript Utilities - Custom Save Data Addon",
   "ModAuthor": "oceanstuck",
-  "ModVersion": "1.0.0",
+  "ModVersion": "1.0.1",
   "ModDescription": "Additional flowscript functions for interfacing with Custom Save Data Framework",
   "ModDll": "p5rpc.flowutils.customsavedata.dll",
   "ModIcon": "Preview.png",

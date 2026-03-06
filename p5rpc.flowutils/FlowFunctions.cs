@@ -3,6 +3,7 @@ using p5rpc.flowutils.logging;
 using p5rpc.lib.interfaces;
 using Reloaded.Mod.Interfaces;
 using RemixToolkit.Core.Configs.Models;
+using Mira.Configurer.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,8 @@ using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
+using RemixConfigSetting = RemixToolkit.Core.Configs.Models.ConfigSetting;
+using MiraConfigOption = Mira.Configurer.Config.ConfigOption;
 
 namespace p5rpc.flowutils;
 
@@ -135,6 +138,9 @@ internal class FlowFunctions
         object? value = null;
 
         var r2ConfigPath = Path.Combine(_modLoader.GetModConfigDirectory(modId), "Config.json");
+        var remixConfigPath = Path.Combine(_modLoader.GetModConfigDirectory(modId), "ReMIX", "Config", "data.yaml");
+        var miraSchemaPath = Path.Combine(_modLoader.GetDirectoryForModId(modId), "Mira", "Config", "config.yaml");
+
         if (File.Exists(r2ConfigPath))
         {
             _logger.WriteLog(LogLevel.DEBUG, $"R2 config file found for {modId}");
@@ -144,34 +150,39 @@ internal class FlowFunctions
                 throw new ArgumentException($"Failed to read R2 config file for {modId}.");
             }
         }
-        else
+        else if (File.Exists(remixConfigPath))
         {
-            var remixConfigPath = Path.Combine(_modLoader.GetModConfigDirectory(modId), "ReMIX", "Config", "data.yaml");
-            if (File.Exists(remixConfigPath))
+            _logger.WriteLog(LogLevel.DEBUG, $"ReMIX config file found for {modId}");
+            var remixSchemaPath = Path.Combine(_modLoader.GetDirectoryForModId(modId), "ReMIX", "Config", "config.yaml");
+            if (File.Exists(remixSchemaPath))
             {
-                _logger.WriteLog(LogLevel.DEBUG, $"ReMIX config file found for {modId}");
-                var remixSchemaPath = Path.Combine(_modLoader.GetDirectoryForModId(modId), "ReMIX", "Config", "config.yaml");
-                if (File.Exists(remixSchemaPath))
+                _logger.WriteLog(LogLevel.DEBUG, $"ReMIX schema file found for {modId}");
+                if (!TryGetRemixConfigValue(modId, configId, remixConfigPath, remixSchemaPath, out value, isFloat))
                 {
-                    _logger.WriteLog(LogLevel.DEBUG, $"ReMIX schema file found for {modId}");
-                    if (!TryGetRemixConfigValue(modId, configId, remixConfigPath, remixSchemaPath, out value, isFloat))
-                    {
-                        _logger.WriteLog(LogLevel.ERROR, $"Failed to read ReMIX config file for {modId}");
-                        throw new ArgumentException($"Failed to read ReMIX config file for {modId}");
-                    }
-                }
-                else
-                {
-                    _logger.WriteLog(LogLevel.ERROR, $"Failed to find schema file for {modId}");
-                    throw new FileNotFoundException($"Missing schema file for {modId}");
+                    _logger.WriteLog(LogLevel.ERROR, $"Failed to read ReMIX config file for {modId}");
+                    throw new ArgumentException($"Failed to read ReMIX config file for {modId}");
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.WARNING, $"Failed to find config file for {modId} (is this mod installed and enabled?)");
-                if (_modLoader.GetAppConfig().EnabledMods.Contains(modId)) { throw new FileNotFoundException($"Missing config file for {modId}"); }
-                else { return 0; }
+                _logger.WriteLog(LogLevel.ERROR, $"Failed to find schema file for {modId}");
+                throw new FileNotFoundException($"Missing schema file for {modId}");
             }
+        }
+        else if (File.Exists(miraSchemaPath))
+        {
+            _logger.WriteLog(LogLevel.DEBUG, $"Mira schema file found for {modId}");
+            if (!TryGetMiraConfigValue(modId, configId, miraSchemaPath, out value, isFloat))
+            {
+                _logger.WriteLog(LogLevel.ERROR, $"Failed to read Mira profile for {modId}");
+                throw new ArgumentException($"Failed to read Mira profile for {modId}");
+            }
+        }
+        else
+        {
+            _logger.WriteLog(LogLevel.WARNING, $"Failed to find config file for {modId} (is this mod installed and enabled?)");
+            if (_modLoader.GetAppConfig().EnabledMods.Contains(modId)) { throw new FileNotFoundException($"Missing config file for {modId}"); }
+            else { return 0; }
         }
 
         return value!;
@@ -343,13 +354,13 @@ internal class FlowFunctions
         schemaParser.Consume<DocumentStart>();
         schemaParser.Consume<MappingStart>();
 
-        ConfigSetting? configSchema = null;
+        RemixConfigSetting? configSchema = null;
         while (schemaParser.TryConsume<Scalar>(out var section))
         {
             if (section.Value == "settings")
             {
                 _logger.WriteLog(LogLevel.DEBUG, $"Deserializing schema settings for {modId}");
-                configSchema = yamlDeserializer.Deserialize<ConfigSetting[]>(schemaParser).Where(x => x.Id == configId).First();
+                configSchema = yamlDeserializer.Deserialize<RemixConfigSetting[]>(schemaParser).Where(x => x.Id == configId).First();
                 break;
             }
             else
@@ -365,6 +376,15 @@ internal class FlowFunctions
             return false;
         }
 
+        var configType = configSchema.GetPropertyType();
+        _logger.WriteLog(LogLevel.DEBUG, $"{configId} in {modId} is of type {configType.ToString()}");
+
+        if (configType == typeof(string))
+        {
+            _logger.WriteLog(LogLevel.ERROR, $"Config value {configId} in {modId} is unsupported type: {configType.ToString()}.");
+            return false;
+        }
+
         if (remixConfig.TryGetValue(configSchema.Id, out configValue))
         {
             if (configValue == null)
@@ -372,16 +392,8 @@ internal class FlowFunctions
                 _logger.WriteLog(LogLevel.WARNING, $"Config value {configSchema.Id} for {modId} returned null. Returning default value...");
                 configValue = configSchema.GetDefaultValue();
             }
-
-            var configType = configSchema.GetPropertyType();
-            _logger.WriteLog(LogLevel.DEBUG, $"{configId} in {modId} is of type {configType.ToString()}");
-
-            if (configType == typeof(string))
-            {
-                _logger.WriteLog(LogLevel.ERROR, $"Config value {configId} in {modId} is unsupported type: {configType.ToString()}.");
-                return false;
-            }
-            else if (isFloat)
+            
+            if (isFloat)
             {
                 if (configType == typeof(double)) { _logger.WriteLog(LogLevel.WARNING, $"Attempted to read double value {configId} in {modId}."); }
                 configValue = Convert.ChangeType(configValue, configType);
@@ -391,19 +403,128 @@ internal class FlowFunctions
                 configValue = configType.IsEnum ? Convert.ToInt32(configValue) : Convert.ChangeType(configValue, configType);
                 if (configType == typeof(bool)) { configValue = (bool)configValue! ? 1 : 0; }
             }
-
-            _logger.WriteLog(LogLevel.DEBUG, $"Config value {configId} in {modId} is equal to {configValue!.ToString()}");
-            return true;
         }
         else
         {
-            _logger.WriteLog(LogLevel.ERROR, $"Failed to get config value {configId} in {modId}");
-            return false;
+            _logger.WriteLog(LogLevel.WARNING, $"Failed to get value of {configId}, attempting to use default value...");
+            configValue = configSchema.GetDefaultValue();
+            if (configType == typeof(bool)) { configValue = (bool)configValue! ? 1 : 0; }
         }
+
+        _logger.WriteLog(LogLevel.DEBUG, $"Config value {configId} in {modId} is equal to {configValue!.ToString()}");
+        return true;
     }
 
-    /*private bool TryGetMiraConfigValue(string modId, string configId)
+    private bool TryGetMiraConfigValue(string modId, string configId, string schemaPath, out object? configValue, bool isFloat = false)
     {
+        configValue = null;
+        _logger.WriteLog(LogLevel.INFO, $"Attempting to read {(isFloat ? "float" : "int")} value from Mira config");
 
-    }*/
+        var yamlDeserializer = new DeserializerBuilder().IgnoreUnmatchedProperties().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
+
+        var schemaParser = new Parser(new StringReader(File.ReadAllText(schemaPath)));
+        schemaParser.Consume<StreamStart>();
+        schemaParser.Consume<DocumentStart>();
+        schemaParser.Consume<MappingStart>();
+
+        MiraConfigOption? configSchema = null;
+        while (schemaParser.TryConsume<Scalar>(out var section))
+        {
+            if (section.Value == "options")
+            {
+                _logger.WriteLog(LogLevel.DEBUG, $"Deserializing schema settings for {modId}");
+                configSchema = yamlDeserializer.Deserialize<MiraConfigOption[]>(schemaParser).Where(x => x.Id == configId).First();
+                break;
+            }
+            else
+            {
+                _logger.WriteLog(LogLevel.DEBUG, $"Skipping schema {section.Value} section...");
+                schemaParser.SkipThisAndNestedEvents();
+            }
+        }
+
+        if (configSchema == null)
+        {
+            _logger.WriteLog(LogLevel.ERROR, $"Failed to deserialize Mira config for {modId}.");
+            return false;
+        }
+
+        var configType = configSchema.Type;
+        _logger.WriteLog(LogLevel.DEBUG, $"{configId} in {modId} is of type {configType}");
+        if (!(configType == OptionType.Number || configType == OptionType.Toggle || configType == OptionType.Choice))
+        {
+            _logger.WriteLog(LogLevel.ERROR, $"Config value {configId} in {modId} is unsupported type: {configType.ToString()}.");
+            return false;
+        }
+
+        var configStoragePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mira", "ConfigStorage");
+        var profilePath = Path.Combine(configStoragePath, modId, "Default.json");
+        var settingsFile = Path.Combine(configStoragePath, "settings.json");
+
+        // todo fetch non-default profile json
+        /*if (File.Exists(settingsFile))
+        {
+            using (JsonDocument profileSettings = JsonDocument.Parse(File.ReadAllText(settingsFile)))
+            {
+
+            }
+        }*/
+
+        using (JsonDocument configProfile = JsonDocument.Parse(File.ReadAllText(profilePath)))
+        {
+            var configItem = configProfile.RootElement.GetProperty("Values").GetProperty(configId).GetString();
+
+            /*switch (configItem.ValueKind)
+            {
+                case JsonValueKind.True:
+                    configValue = 1;
+                    break;
+                case JsonValueKind.False:
+                    configValue = 0;
+                    break;
+                case JsonValueKind.Number:
+                    if (isFloat && configItem.TryGetDouble(out var floatVal)) { configValue = (float)floatVal; }
+                    else if (configItem.TryGetInt32(out var intVal)) { configValue = intVal; }
+                    else
+                    {
+                        _logger.WriteLog(LogLevel.ERROR, $"Failed to parse config value {configId} in {modId}.");
+                        return false;
+                    }
+                    break;
+                default:
+                    _logger.WriteLog(LogLevel.ERROR, $"Config value {configId} in {modId} is unsupported type: {configItem.ValueKind.ToString()}.");
+                    return false;
+            }*/
+
+            if (configType == OptionType.Toggle)
+            {
+                if (!bool.TryParse(configItem, out var boolVal))
+                {
+                    _logger.WriteLog(LogLevel.WARNING, $"Failed to get value of {configId}, attempting to use default value...");
+                    configValue = (bool)configSchema.GetDefaultValue() ? 1 : 0;
+                }
+                else { configValue = boolVal ? 1 : 0; }
+            }
+            else if (isFloat)
+            {
+                if (!float.TryParse(configItem, out var floatVal))
+                {
+                    _logger.WriteLog(LogLevel.WARNING, $"Failed to get value of {configId}, attempting to use default value...");
+                    configValue = configSchema.GetDefaultValue();
+                }
+                else { configValue = floatVal; }
+            }
+            else
+            {
+                if (!int.TryParse(configItem, out var intVal))
+                {
+                    _logger.WriteLog(LogLevel.WARNING, $"Failed to get value of {configId}, attempting to use default value...");
+                    configValue = configSchema.GetDefaultValue();
+                }
+                else { configValue = intVal; }
+            }
+        }
+
+        return true;
+    }
 }
