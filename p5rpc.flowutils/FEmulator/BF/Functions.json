@@ -75,6 +75,19 @@
     ]
   },
   {
+    "Index": "0x337D",
+    "ReturnType": "int",
+    "Name": "CMM_GET_REQUEST",
+    "Description": "Returns the id of a Mementos request required for a Confidant's progression, or -1 if the specified Confidant does not require one.",
+    "Parameters": [
+      {
+        "Type": "int",
+        "Name": "commuId",
+        "Description": "Confidant's id as seen in CMM.BIN."
+      }
+    ]
+  },
+  {
     "Index": "0x0411",
     "ReturnType": "int",
     "Name": "ANY_ROMANCE_ACTIVE",

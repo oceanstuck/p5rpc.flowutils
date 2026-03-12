@@ -199,7 +199,7 @@ internal class FlowFunctions
 
             if (idPair.Item1 == 33 || idPair.Item1 == 36) // hardcoded sumire check bc both halves are 2 ids each
             {
-                for (int i = 37; i > 32; i--)
+                for (int i = 33; i > 37; i++)
                 {
                     if (i == 35) { continue; } // bypass maruki id
                     if (_flowCaller.CMM_EXIST(i) == 1)
@@ -207,12 +207,60 @@ internal class FlowFunctions
                         flowApi.SetReturnValue(i);
                         break;
                     }
-                    if (i == 33) { flowApi.SetReturnValue(-1); }
+                    if (i == 37) { flowApi.SetReturnValue(-1); }
                 }
             }
             else if (idPair.Item1 != idPair.Item2 && _flowCaller.CMM_EXIST(idPair.Item2) == 1) { flowApi.SetReturnValue(idPair.Item2); }
             else { flowApi.SetReturnValue(_flowCaller.CMM_EXIST(idPair.Item1) == 1 ? idPair.Item1 : -1); }
 
+            return FlowStatus.SUCCESS;
+        });
+
+        _flowFramework.Register("CMM_GET_REQUEST", 1, () =>
+        {
+            var commuId = flowApi.GetIntArg(0);
+            int requestId = -1;
+
+            switch (commuId)
+            {
+                case 6:
+                    requestId = 60;
+                    break;
+                case 10:
+                case 26:
+                    requestId = 59;
+                    break;
+                case 11:
+                case 27:
+                    requestId = 53;
+                    break;
+                case 13:
+                    requestId = 54;
+                    break;
+                case 14:
+                case 28:
+                    requestId = 55;
+                    break;
+                case 15:
+                case 29:
+                    requestId = 56;
+                    break;
+                case 16:
+                case 30:
+                    requestId = 57;
+                    break;
+                case 17:
+                    requestId = 51;
+                    break;
+                case 18:
+                case 31:
+                    requestId = 58;
+                    break;
+                default:
+                    break;
+            }
+
+            flowApi.SetReturnValue(requestId);
             return FlowStatus.SUCCESS;
         });
 
