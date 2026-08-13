@@ -2,7 +2,7 @@
   "ModId": "p5rpc.flowutils",
   "ModName": "Flowscript Utilities",
   "ModAuthor": "oceanstuck",
-  "ModVersion": "1.0.2",
+  "ModVersion": "1.0.3",
   "ModDescription": "Adds functions to check enabled mods and mod config values, as well as whatever other general-use functions I can think of.",
   "ModDll": "p5rpc.flowutils.dll",
   "ModIcon": "Preview.png",
