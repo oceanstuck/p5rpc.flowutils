@@ -27,7 +27,58 @@ internal class FlowFunctions
     private IModLoader _modLoader;
 
     private IFlowCaller _flowCaller;
-    private List<(int, int)> confidantIds;
+    private static List<(int, int)> femaleConfidantIdTuples = new()
+    {
+        (3, 23),
+        (4, 24),
+        (7, 25),
+        (10, 26),
+        (11, 27),
+        (14, 28),
+        (15, 29),
+        (16, 30),
+        (18, 31),
+        (21, 32), // sae altid is never used but included for flag checking convenience
+        (33, 34),
+        (36, 37)
+    };
+
+    internal record FlagInfo(string modId, int confidantId, int flagId);
+    private static List<FlagInfo> RomanceFlags = new()
+    {
+        new FlagInfo("Default", 3, 3792),
+        new FlagInfo("Default", 4, 3793),
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 5, 3790),
+        new FlagInfo("p5rpc.BiJoker.events", 5, 3789),
+        new FlagInfo("p5rpc.femaleprotagonist", 5, 12510),
+        new FlagInfo("Default", 7, 3794),
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 8, 3787),
+        new FlagInfo("p5rpc.BiJoker.events", 8, 3785),
+        new FlagInfo("p5rpc.femaleprotagonist", 8, 12511),
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 9, 3788),
+        new FlagInfo("p5rpc.BiJoker.events", 9, 3786),
+        new FlagInfo("p5rpc.femaleprotagonist", 9, 12512),
+        new FlagInfo("Default", 10, 3795),
+        new FlagInfo("Default", 11, 3796),
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 13, 3785),
+        new FlagInfo("p5rpc.BiJoker.events", 13, 3783),
+        new FlagInfo("Default", 14, 3797),
+        new FlagInfo("Default", 15, 3798),
+        new FlagInfo("Default", 16, 3799),
+        new FlagInfo("Default", 18, 3800),
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 19, 3789),
+        new FlagInfo("p5rpc.BiJoker.events", 19, 3789),
+        new FlagInfo("p5rpc.femaleprotagonist", 19, 12513),
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 20, 3786),
+        new FlagInfo("p5rpc.BiJoker.events", 20, 3784),
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 21, 3784),
+        new FlagInfo("p5rpc.BiJoker.events", 21, 3782),
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 22, 3791),
+        new FlagInfo("p5rpc.BiJoker.events", 22, 3787),
+        new FlagInfo("Default", 33, 3817),
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 35, 3783),
+        new FlagInfo("p5rpc.BiJoker.events", 35, 3781)
+    };
 
     /* private enum ItemSection
     {
@@ -49,22 +100,6 @@ internal class FlowFunctions
         _modLoader = modLoader;
         _flowCaller = flowCaller;
 
-        confidantIds = new List<(int, int)>()
-        {
-            (3, 23),
-            (4, 24),
-            (7, 25),
-            (10, 26),
-            (11, 27),
-            (14, 28),
-            (15, 29),
-            (16, 30),
-            (18, 31),
-            // (21, 32), sae altid is never used
-            (33, 34),
-            (36, 37)
-        };
-
         RegisterConfigReaders();
         RegisterMiscFunctions();
     }
@@ -80,7 +115,7 @@ internal class FlowFunctions
             var modId = flowApi.GetStringArg(0);
             _logger.WriteLog(LogLevel.DEBUG, $"Mod id passed to IS_MOD_ENABLED: {modId}");
 
-            var isEnabled = _modLoader.GetAppConfig().EnabledMods.Contains(modId) ? 1 : 0;
+            var isEnabled = IsModEnabled(modId) ? 1 : 0;
             flowApi.SetReturnValue(isEnabled);
 
             return FlowStatus.SUCCESS;
@@ -130,6 +165,8 @@ internal class FlowFunctions
 
         });
     }
+
+    private bool IsModEnabled(string modId) => _modLoader.GetAppConfig().EnabledMods.Contains(modId);
 
     private bool IsModLoaded(string modId) => _modLoader.GetLoadedMods().Where(m => m.ModId == modId).Any();
 
@@ -181,7 +218,7 @@ internal class FlowFunctions
         else
         {
             _logger.WriteLog(LogLevel.WARNING, $"Failed to find config file for {modId} (is this mod installed and enabled?)");
-            if (_modLoader.GetAppConfig().EnabledMods.Contains(modId)) { throw new FileNotFoundException($"Missing config file for {modId}"); }
+            if (IsModEnabled(modId)) { throw new FileNotFoundException($"Missing config file for {modId}"); }
             else { return 0; }
         }
 
@@ -195,11 +232,11 @@ internal class FlowFunctions
         _flowFramework.Register("CMM_GET_IN_USE_ID", 1, () =>
         {
             var inputId = flowApi.GetIntArg(0);
-            var idPair = confidantIds.Exists(x => x.Item1 == inputId || x.Item2 == inputId) ? confidantIds.Find(x => x.Item1 == inputId || x.Item2 == inputId) : (inputId, inputId);
+            var idPair = femaleConfidantIdTuples.Exists(x => x.Item1 == inputId || x.Item2 == inputId) ? femaleConfidantIdTuples.Find(x => x.Item1 == inputId || x.Item2 == inputId) : (inputId, inputId);
 
             if (idPair.Item1 == 33 || idPair.Item1 == 36) // hardcoded sumire check bc both halves are 2 ids each
             {
-                for (int i = 33; i > 37; i++)
+                for (int i = 33; i < 37; i++)
                 {
                     if (i == 35) { continue; } // bypass maruki id
                     if (_flowCaller.CMM_EXIST(i) == 1)
@@ -266,7 +303,7 @@ internal class FlowFunctions
 
         _flowFramework.Register("ANY_ROMANCE_ACTIVE", 0, () =>
         {
-            bool romanceActive = IsDatingWoman() || (IsDatingMan());
+            bool romanceActive = HasWaifu() || HasHusbando();
 
             flowApi.SetReturnValue(romanceActive ? 1 : 0);
             return FlowStatus.SUCCESS;
@@ -274,19 +311,19 @@ internal class FlowFunctions
 
         _flowFramework.Register("FEMALE_ROMANCE_ACTIVE", 0, () =>
         {
-            flowApi.SetReturnValue(IsDatingWoman() ? 1 : 0);
+            flowApi.SetReturnValue(HasWaifu() ? 1 : 0);
             return FlowStatus.SUCCESS;
         });
 
         _flowFramework.Register("MALE_ROMANCE_ACTIVE", 0, () =>
         {
-            flowApi.SetReturnValue(IsDatingMan() ? 1 : 0);
+            flowApi.SetReturnValue(HasHusbando() ? 1 : 0);
             return FlowStatus.SUCCESS;
         });
 
         _flowFramework.Register("GET_MALE_ROMANCE_FLAG", 1, () =>
         {
-            flowApi.SetReturnValue(GetYaoiFlagId(flowApi.GetIntArg(0)));
+            flowApi.SetReturnValue(GetRomanceFlagId(flowApi.GetIntArg(0)));
             return FlowStatus.SUCCESS;
         });
 
@@ -300,51 +337,49 @@ internal class FlowFunctions
         });
     }
 
-    private bool IsDatingMan()
+    private bool HasHusbando()
     {
-        return IsModLoaded("p5rpc.misc.maleromanceconftext") &&
-                (_flowCaller.BIT_CHK(GetYaoiFlagId(8)) == 1
-                || _flowCaller.BIT_CHK(GetYaoiFlagId(9)) == 1
-                || _flowCaller.BIT_CHK(GetYaoiFlagId(19)) == 1
-                || _flowCaller.BIT_CHK(GetYaoiFlagId(5)) == 1
-                || _flowCaller.BIT_CHK(3783) == 1
-                || _flowCaller.BIT_CHK(3785) == 1
-                || _flowCaller.BIT_CHK(3786) == 1);
+        foreach (var id in new List<int>() { 5, 8, 9, 13, 19, 20} )
+        {
+            var flagId = GetRomanceFlagId(id);
+            if (_flowCaller.BIT_CHK(flagId) == 1)
+                return true;
+        }
+        return false;
     }
 
-    private bool IsDatingWoman()
+    private bool HasWaifu()
     {
-        return _flowCaller.BIT_CHK(3792) == 1
-                || _flowCaller.BIT_CHK(3793) == 1
-                || _flowCaller.BIT_CHK(3794) == 1
-                || _flowCaller.BIT_CHK(3795) == 1
-                || _flowCaller.BIT_CHK(3796) == 1
-                || _flowCaller.BIT_CHK(3797) == 1
-                || _flowCaller.BIT_CHK(3798) == 1
-                || _flowCaller.BIT_CHK(3799) == 1
-                || _flowCaller.BIT_CHK(3800) == 1
-                || _flowCaller.BIT_CHK(3784) == 1
-                || _flowCaller.BIT_CHK(3817) == 1;
+        foreach (var idTuple in femaleConfidantIdTuples)
+        {
+            var flagId = GetRomanceFlagId((int)idTuple.Item1);
+            if (_flowCaller.BIT_CHK(flagId) == 1)
+                return true;
+        }
+        return false;
     }
 
     // todo femc behavior
-    private int GetYaoiFlagId(int commuId)
+    private int GetRomanceFlagId(int commuId)
     {
-        if (!IsModLoaded("p5rpc.misc.maleromanceconftext")) { return -1; }
-        var gayJokerEnabled = _modLoader.GetAppConfig().EnabledMods.Contains("p5rpc.BiJoker.events");
+        var unhardcodedRomanceEnabled = IsModLoaded("p5rpc.misc.maleromanceconftext");
+        var gayJokerEnabled = IsModEnabled("p5rpc.BiJoker.events");
+        var femcEnabled = IsModEnabled("p5rpc.femaleprotagonist");
 
-        switch (commuId)
-        {
-            case 5:
-                return gayJokerEnabled ? 3789 : 3790;
-            case 8:
-                return gayJokerEnabled ? 3785 : 3787;
-            case 9:
-                return gayJokerEnabled ? 3786 : 3788;
-            case 19:
-            default:
-                return gayJokerEnabled ? 3791 : 3789;
-        }
+        var entriesForThisId = RomanceFlags.Where(x => x.confidantId == commuId).ToList();
+        if (entriesForThisId.Count == 0)
+            return -1;
+
+        if (entriesForThisId.Exists(x => x.modId == "Default")) // vanilla romances, check this first as unaffected by enabled mods
+            return entriesForThisId.Find(x => x.modId == "Default")!.flagId;
+        if (femcEnabled && entriesForThisId.Exists(x => x.modId == "p5rpc.femaleprotagonist"))
+            return entriesForThisId.Find(x => x.modId == "p5rpc.femaleprotagonist")!.flagId;
+        if (gayJokerEnabled && entriesForThisId.Exists(x => x.modId == "p5rpc.BiJoker.events"))
+            return entriesForThisId.Find(x => x.modId == "p5rpc.BiJoker.events")!.flagId;
+        if (unhardcodedRomanceEnabled)
+            return entriesForThisId.Find(x => x.modId == "p5rpc.misc.maleromanceconftext")!.flagId;
+
+        return -1; // entry for id exists but none of above mods are enabled
     }
 
     private bool TryGetR2ConfigValue(string modId, string configId, string configPath, out object? configValue, bool isFloat = false)
