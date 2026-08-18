@@ -2,7 +2,7 @@
   "ModId": "p5rpc.flowutils",
   "ModName": "Flowscript Utilities",
   "ModAuthor": "oceanstuck",
-  "ModVersion": "1.0.3",
+  "ModVersion": "1.0.4",
   "ModDescription": "Adds functions to check enabled mods and mod config values, as well as whatever other general-use functions I can think of.",
   "ModDll": "p5rpc.flowutils.dll",
   "ModIcon": "Preview.png",
@@ -15,6 +15,18 @@
   "HasExports": false,
   "IsLibrary": true,
   "ReleaseMetadataFileName": "p5rpc.flowutils.ReleaseMetadata.json",
+  "IgnoreRegexes": [
+    ".*\\.json",
+    "\\.vs",
+    "\\.git",
+    "project\\.haru"
+  ],
+  "IncludeRegexes": [
+    "\\.deps\\.json",
+    "\\.runtimeconfig\\.json",
+    "ModConfig\\.json",
+    "Functions\\.json"
+  ],
   "PluginData": {
     "GitHubDependencies": {
       "IdToConfigMap": {
@@ -90,6 +102,10 @@
       "RepositoryName": "p5rpc.flowutils",
       "UseReleaseTag": false,
       "AssetFileName": "Mod.zip"
+    },
+    "GameBanana": {
+      "ItemType": "Mod",
+      "ItemId": 706324
     }
   },
   "IsUniversalMod": false,

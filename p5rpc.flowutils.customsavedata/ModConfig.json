@@ -2,7 +2,7 @@
   "ModId": "p5rpc.flowutils.customsavedata",
   "ModName": "Flowscript Utilities - Custom Save Data Addon",
   "ModAuthor": "oceanstuck",
-  "ModVersion": "1.0.1",
+  "ModVersion": "1.0.2",
   "ModDescription": "Additional flowscript functions for interfacing with Custom Save Data Framework",
   "ModDll": "p5rpc.flowutils.customsavedata.dll",
   "ModIcon": "Preview.png",
@@ -15,6 +15,18 @@
   "HasExports": null,
   "IsLibrary": true,
   "ReleaseMetadataFileName": "p5rpc.flowutils.customsavedata.ReleaseMetadata.json",
+  "IgnoreRegexes": [
+    ".*\\.json",
+    "\\.vs",
+    "\\.git",
+    "project\\.haru"
+  ],
+  "IncludeRegexes": [
+    "\\.deps\\.json",
+    "\\.runtimeconfig\\.json",
+    "ModConfig\\.json",
+    "Functions\\.json"
+  ],
   "PluginData": {
     "GitHubDependencies": {
       "IdToConfigMap": {
@@ -178,6 +190,10 @@
           "ReleaseMetadataName": "p5rpc.flowscriptframework.ReleaseMetadata.json"
         }
       }
+    },
+    "GameBanana": {
+      "ItemType": "Mod",
+      "ItemId": 706324
     }
   },
   "IsUniversalMod": false,
