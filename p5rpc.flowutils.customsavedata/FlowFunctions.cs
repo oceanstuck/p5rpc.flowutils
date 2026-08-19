@@ -45,6 +45,14 @@ internal class FlowFunctions
             return FlowStatus.SUCCESS;
         });
 
+        _flowFramework.Register("CUSTOM_SAVE_MOD_KEY_EXISTS", 1, () =>
+        {
+            var modId = flowApi.GetStringArg(0);
+            _logger.WriteLog(LogLevel.DEBUG, $"Calling CUSTOM_SAVE_MOD_KEY_EXISTS with mod id {modId}.");
+            flowApi.SetReturnValue(_customSaveDataFramework.ContainsModKey(modId) ? 1 : 0);
+            return FlowStatus.SUCCESS;
+        });
+
         _flowFramework.Register("GET_CUSTOM_SAVE_DATA_INT", 2, () =>
         {
             var modId = flowApi.GetStringArg(0);

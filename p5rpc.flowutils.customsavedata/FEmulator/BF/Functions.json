@@ -225,6 +225,19 @@
     ]
   },
   {
+    "Index": "0xCEBB",
+    "ReturnType": "int",
+    "Name": "CUSTOM_SAVE_MOD_KEY_EXISTS",
+    "Description": "Returns whether custom save data exists for a given mod id.",
+    "Parameters": [
+      {
+        "Type": "string",
+        "Name": "modId",
+        "Description": "ID of a mod as seen in its ModConfig.json."
+      }
+    ]
+  },
+  {
     "Index": "0x79E3",
     "ReturnType": "int",
     "Name": "TRY_REMOVE_CUSTOM_SAVE_ENTRY",

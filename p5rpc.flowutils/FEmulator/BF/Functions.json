@@ -88,31 +88,17 @@
     ]
   },
   {
-    "Index": "0x0411",
+    "Index": "0xF47A",
     "ReturnType": "int",
-    "Name": "ANY_ROMANCE_ACTIVE",
-    "Description": "Returns 1 if romance flag for any Confidant is enabled, 0 otherwise.",
+    "Name": "GET_NUM_ROMANCES",
+    "Description": "Returns the number of romance flags currently set.",
     "Parameters": []
   },
   {
-    "Index": "0x0280",
+    "Index": "0xD469",
     "ReturnType": "int",
-    "Name": "FEMALE_ROMANCE_ACTIVE",
-    "Description": "Returns 1 if romance flag for a female Confidant is enabled, 0 otherwise.",
-    "Parameters": []
-  },
-  {
-    "Index": "0xA77D",
-    "ReturnType": "int",
-    "Name": "MALE_ROMANCE_ACTIVE",
-    "Description": "Returns 1 if romance flag for a male Confidant is enabled, 0 if none active or if Unhardcoded Romance is not loaded.",
-    "Parameters": []
-  },
-  {
-    "Index": "0x2543",
-    "ReturnType": "int",
-    "Name": "GET_MALE_ROMANCE_FLAG",
-    "Description": "Returns the id of the bitflag being used by Unhardcoded Romance for a male Confidant, or -1 if Unhardcoded Romance is not loaded. Useful for ensuring Gay Joker compatibility, as it uses different flags; Female Protagonist compatibility is not yet implemented.",
+    "Name": "GET_ROMANCE_FLAG",
+    "Description": "Returns the (summed) id of a Confidant's romance bitflag, or -1 if they have none. Useful for ensuring Gay Joker or Female Protagonist compatibility, which use different flags from the Unhardcoded Romance default.",
     "Parameters": [
       {
         "Type": "int",

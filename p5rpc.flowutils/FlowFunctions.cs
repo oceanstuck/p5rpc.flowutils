@@ -48,36 +48,44 @@ internal class FlowFunctions
     {
         new FlagInfo("Default", 3, 3792),
         new FlagInfo("Default", 4, 3793),
-        new FlagInfo("p5rpc.misc.maleromanceconftext", 5, 3790),
-        new FlagInfo("p5rpc.BiJoker.events", 5, 3789),
-        new FlagInfo("p5rpc.femaleprotagonist", 5, 12510),
         new FlagInfo("Default", 7, 3794),
-        new FlagInfo("p5rpc.misc.maleromanceconftext", 8, 3787),
-        new FlagInfo("p5rpc.BiJoker.events", 8, 3785),
-        new FlagInfo("p5rpc.femaleprotagonist", 8, 12511),
-        new FlagInfo("p5rpc.misc.maleromanceconftext", 9, 3788),
-        new FlagInfo("p5rpc.BiJoker.events", 9, 3786),
-        new FlagInfo("p5rpc.femaleprotagonist", 9, 12512),
         new FlagInfo("Default", 10, 3795),
         new FlagInfo("Default", 11, 3796),
-        new FlagInfo("p5rpc.misc.maleromanceconftext", 13, 3785),
-        new FlagInfo("p5rpc.BiJoker.events", 13, 3783),
         new FlagInfo("Default", 14, 3797),
         new FlagInfo("Default", 15, 3798),
         new FlagInfo("Default", 16, 3799),
         new FlagInfo("Default", 18, 3800),
-        new FlagInfo("p5rpc.misc.maleromanceconftext", 19, 3789),
-        new FlagInfo("p5rpc.BiJoker.events", 19, 3789),
-        new FlagInfo("p5rpc.femaleprotagonist", 19, 12513),
-        new FlagInfo("p5rpc.misc.maleromanceconftext", 20, 3786),
-        new FlagInfo("p5rpc.BiJoker.events", 20, 3784),
-        new FlagInfo("p5rpc.misc.maleromanceconftext", 21, 3784),
-        new FlagInfo("p5rpc.BiJoker.events", 21, 3782),
-        new FlagInfo("p5rpc.misc.maleromanceconftext", 22, 3791),
-        new FlagInfo("p5rpc.BiJoker.events", 22, 3787),
         new FlagInfo("Default", 33, 3817),
+
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 5, 3790),
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 8, 3787),
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 9, 3788),
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 13, 3785),
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 19, 3789),
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 20, 3786),
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 21, 3784),
+        new FlagInfo("p5rpc.misc.maleromanceconftext", 22, 3791),
         new FlagInfo("p5rpc.misc.maleromanceconftext", 35, 3783),
-        new FlagInfo("p5rpc.BiJoker.events", 35, 3781)
+
+        new FlagInfo("p5rpc.BiJoker.events", 5, 3789),
+        new FlagInfo("p5rpc.BiJoker.events", 8, 3785),
+        new FlagInfo("p5rpc.BiJoker.events", 9, 3786),
+        new FlagInfo("p5rpc.BiJoker.events", 13, 3783),
+        new FlagInfo("p5rpc.BiJoker.events", 19, 3789),
+        new FlagInfo("p5rpc.BiJoker.events", 20, 3784),
+        new FlagInfo("p5rpc.BiJoker.events", 21, 3782),
+        new FlagInfo("p5rpc.BiJoker.events", 22, 3787),
+        new FlagInfo("p5rpc.BiJoker.events", 35, 3781),
+
+        new FlagInfo("p5rpc.femaleprotagonist", 5, 12510),
+        new FlagInfo("p5rpc.femaleprotagonist", 8, 12511),
+        new FlagInfo("p5rpc.femaleprotagonist", 9, 12512),
+        new FlagInfo("p5rpc.femaleprotagonist", 13, 3783),
+        new FlagInfo("p5rpc.femaleprotagonist", 19, 12513),
+        new FlagInfo("p5rpc.femaleprotagonist", 20, 3784),
+        new FlagInfo("p5rpc.femaleprotagonist", 21, 3782),
+        new FlagInfo("p5rpc.femaleprotagonist", 22, 3787),
+        new FlagInfo("p5rpc.femaleprotagonist", 35, 3781)
     };
 
     /* private enum ItemSection
@@ -301,27 +309,49 @@ internal class FlowFunctions
             return FlowStatus.SUCCESS;
         });
 
-        _flowFramework.Register("ANY_ROMANCE_ACTIVE", 0, () =>
+        _flowFramework.Register("GET_NUM_ROMANCES", 0, () =>
         {
-            bool romanceActive = HasWaifu() || HasHusbando();
+            int numRomances = 0;
+            for (int i = 2; i < 36; i++)
+            {
+                var flag = GetRomanceFlagId(i);
+                if (flag != -1 && _flowCaller.BIT_CHK(flag) == 1)
+                    numRomances++;
+            }
 
-            flowApi.SetReturnValue(romanceActive ? 1 : 0);
+            flowApi.SetReturnValue(numRomances);
             return FlowStatus.SUCCESS;
         });
 
-        _flowFramework.Register("FEMALE_ROMANCE_ACTIVE", 0, () =>
+        /*_flowFramework.Register("GET_NUM_FEMALE_ROMANCES", 0, () =>
         {
-            flowApi.SetReturnValue(HasWaifu() ? 1 : 0);
+            int numWaifus = 0;
+            foreach (var idTuple in femaleConfidantIdTuples)
+            {
+                var flagId = GetRomanceFlagId(idTuple.Item1);
+                if (_flowCaller.BIT_CHK(flagId) == 1)
+                    numWaifus++;
+            }
+            flowApi.SetReturnValue(numWaifus);
             return FlowStatus.SUCCESS;
         });
 
-        _flowFramework.Register("MALE_ROMANCE_ACTIVE", 0, () =>
+        _flowFramework.Register("GET_NUM_MALE_ROMANCES", 0, () =>
         {
-            flowApi.SetReturnValue(HasHusbando() ? 1 : 0);
+            int numHusbandos = 0;
+            if (!IsModLoaded("p5rpc.misc.maleromanceconftext")) // avoid unneeded looping in this case as we know result will be 0
+                _logger.WriteLog(LogLevel.WARNING, "Unhardcoded Romance not loaded, this will always return 0");
+            else foreach (var id in new List<int>() { 5, 8, 9, 13, 19, 20, 35 })
+            {
+                var flagId = GetRomanceFlagId(id);
+                if (_flowCaller.BIT_CHK(flagId) == 1)
+                    numHusbandos++;
+            }
+            flowApi.SetReturnValue(numHusbandos);
             return FlowStatus.SUCCESS;
-        });
+        });*/
 
-        _flowFramework.Register("GET_MALE_ROMANCE_FLAG", 1, () =>
+        _flowFramework.Register("GET_ROMANCE_FLAG", 1, () =>
         {
             flowApi.SetReturnValue(GetRomanceFlagId(flowApi.GetIntArg(0)));
             return FlowStatus.SUCCESS;
@@ -335,28 +365,6 @@ internal class FlowFunctions
 
             return FlowStatus.SUCCESS;
         });
-    }
-
-    private bool HasHusbando()
-    {
-        foreach (var id in new List<int>() { 5, 8, 9, 13, 19, 20} )
-        {
-            var flagId = GetRomanceFlagId(id);
-            if (_flowCaller.BIT_CHK(flagId) == 1)
-                return true;
-        }
-        return false;
-    }
-
-    private bool HasWaifu()
-    {
-        foreach (var idTuple in femaleConfidantIdTuples)
-        {
-            var flagId = GetRomanceFlagId((int)idTuple.Item1);
-            if (_flowCaller.BIT_CHK(flagId) == 1)
-                return true;
-        }
-        return false;
     }
 
     // todo femc behavior
