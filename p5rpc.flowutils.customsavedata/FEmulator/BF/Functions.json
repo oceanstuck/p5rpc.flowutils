@@ -141,7 +141,7 @@
       {
         "Type": "int",
         "Name": "value",
-        "Description": "The value of the field being created."
+        "Description": "The default value of the field being created."
       },
       {
         "Type": "int",
@@ -170,7 +170,7 @@
       {
         "Type": "float",
         "Name": "value",
-        "Description": "The value of the field being created."
+        "Description": "The default value of the field being created."
       },
       {
         "Type": "int",
@@ -199,7 +199,7 @@
       {
         "Type": "string",
         "Name": "value",
-        "Description": "The value of the field being created."
+        "Description": "The default value of the field being created."
       },
       {
         "Type": "int",
