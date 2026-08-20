@@ -146,7 +146,8 @@
       {
         "Type": "int",
         "Name": "unusedDataPolicy",
-        "Description": "Whether to discard this object if a save file is loaded with its associated mod disabled. 0 to keep, 1 to discard."
+        "Description": "Whether to discard this object if a save file is loaded with its associated mod disabled. 0 to keep, 1 to discard.",
+        "DefaultValue": "0"
       }
     ]
   },
@@ -174,7 +175,8 @@
       {
         "Type": "int",
         "Name": "unusedDataPolicy",
-        "Description": "Whether to discard this object if a save file is loaded with its associated mod disabled. 0 to keep, 1 to discard."
+        "Description": "Whether to discard this object if a save file is loaded with its associated mod disabled. 0 to keep, 1 to discard.",
+        "DefaultValue": "0"
       }
     ]
   },
@@ -202,7 +204,8 @@
       {
         "Type": "int",
         "Name": "unusedDataPolicy",
-        "Description": "Whether to discard this object if a save file is loaded with its associated mod disabled. 0 to keep, 1 to discard."
+        "Description": "Whether to discard this object if a save file is loaded with its associated mod disabled. 0 to keep, 1 to discard.",
+        "DefaultValue": "0"
       }
     ]
   },
