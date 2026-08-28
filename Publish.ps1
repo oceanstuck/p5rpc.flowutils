@@ -160,7 +160,7 @@ param (
     $BuildR2R=$False,
     $RemoveExe=$True,
     $UseScriptDirectory=$True,
-    $IncludeRegexes = ("ModConfig\.json", "\.deps\.json", "\.runtimeconfig\.json"),
+    $IncludeRegexes = ("ModConfig\.json", "\.deps\.json", "\.runtimeconfig\.json", "Functions\.json"),
 
     ## => User Config <= ## 
     $ProjectPath = "p5rpc.flowutils.csproj",

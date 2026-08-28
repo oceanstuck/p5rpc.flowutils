@@ -7,6 +7,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "p5rpc.flowutils", "p5rpc.fl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "p5rpc.flowutils.customsavedata", "p5rpc.flowutils.customsavedata\p5rpc.flowutils.customsavedata.csproj", "{60BC1DD5-3646-46C7-9710-F4D3048BAA30}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		Publish.ps1 = Publish.ps1
+		PublishAll.ps1 = PublishAll.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
