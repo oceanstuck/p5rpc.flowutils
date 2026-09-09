@@ -124,5 +124,29 @@
         "Description": "Item's relative id within a section (eg. 5 for section and 105 for idInSection will give marble chessboard id)."
       }
     ]
+  },
+  {
+    "Index": "0xAB18",
+    "ReturnType": "void",
+    "Name": "SET_TRAIT",
+    "Description": "Changes the trait of a given party member's persona.",
+    "Parameters": [
+      {
+        "Type": "int",
+        "Name": "partyId",
+        "Description": "ID of the party member to change trait for"
+      },
+      {
+        "Type": "int",
+        "Name": "traitId",
+        "Description": "Trait's ID in skill.tbl"
+      },
+      {
+        "Type": "int",
+        "Name": "personaSlot",
+        "Description": "ID of a specific slot in the persona stock (zero-based). Does nothing is partyId is not 1 (Joker).",
+        "DefaultValue": "0"
+      }
+    ]
   }
 ]

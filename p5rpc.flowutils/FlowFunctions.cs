@@ -15,6 +15,7 @@ using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
+using p5rpc.flowutils.Memory;
 using RemixConfigSetting = RemixToolkit.Core.Configs.Models.ConfigSetting;
 using MiraConfigOption = Mira.Configurer.Config.ConfigOption;
 
@@ -365,6 +366,35 @@ internal class FlowFunctions
 
             return FlowStatus.SUCCESS;
         });
+
+        unsafe
+        {
+            _flowFramework.Register("SET_TRAIT", 3, () =>
+            {
+                var partyId = flowApi.GetIntArg(0);
+                var traitId = flowApi.GetIntArg(1);
+                var personaSlot = flowApi.GetIntArg(2);
+
+                if (traitId < 0 || traitId > 299)
+                    throw new ArgumentOutOfRangeException("Argument traitId must be within range 0-299");
+
+                // currently trying to write to an out of bounds slot just fails silently, might be worth printing a warning/error to console or just throwing an exception outright
+                if (partyId == 1 && personaSlot >= 0 && personaSlot < 12) // jonkler
+                {
+                    var persona = (MemoryStuffs.JokerPersona*)(0x142851d74 + personaSlot * 0x30);
+                    if (persona->PersonaId > 0) // prevent writing to an empty persona slot
+                        persona->TraitId = (short)traitId;
+                }
+                else if (partyId > 1 && partyId <= 10) // everyone else
+                {
+                    var persona = (MemoryStuffs.PartyPersona*)(0x142852016 + (partyId - 2) * 0x2A0);
+                    persona->TraitId = (short)traitId;
+                }
+
+                return FlowStatus.SUCCESS;
+            });
+
+        }
     }
 
     // todo femc behavior
